@@ -1,11 +1,23 @@
+// @ts-nocheck comment at the top of a file
+
 import React, { useState, useEffect } from 'react';
+import { useUser } from "@gadgetinc/react";
+import { api } from '../api';
 
 export const JournalForm = ({ onSubmit, initialEntry = null }) => {
-  const [entry, setEntry] = useState({
+  const user  = useUser(api);
+
+  const defaultEntry = {
     title: '',
     content: '',
-    date: new Date().toISOString().split('T')[0]
-  });
+    date: new Date().toISOString().split('T')[0],
+    summary: "",
+    keywords: {},
+    moodscores: {},
+    // id: "",
+    // user: user
+  }
+  const [entry, setEntry] = useState(defaultEntry);
 
   useEffect(() => {
     if (initialEntry) {
@@ -16,11 +28,7 @@ export const JournalForm = ({ onSubmit, initialEntry = null }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(entry);
-    setEntry({
-      title: '',
-      content: '',
-      date: new Date().toISOString().split('T')[0]
-    });
+    setEntry(defaultEntry);
   };
 
   return (
@@ -41,7 +49,7 @@ export const JournalForm = ({ onSubmit, initialEntry = null }) => {
         <textarea
           className="form-control"
           id="content"
-          rows="4"
+          rows={4}
           value={entry.content}
           onChange={(e) => setEntry({ ...entry, content: e.target.value })}
           required

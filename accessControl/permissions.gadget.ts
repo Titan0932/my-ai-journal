@@ -24,6 +24,14 @@ export const permissions: GadgetPermissions = {
             resend: true,
           },
         },
+        journalData: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         user: {
           read: true,
           actions: {

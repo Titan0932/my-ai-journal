@@ -29,6 +29,11 @@ export const schema: GadgetModel = {
     firstName: { type: "string", storageKey: "qJZFEoNKEK6Y" },
     googleImageUrl: { type: "url", storageKey: "AraEIplYxZvm" },
     googleProfileId: { type: "string", storageKey: "p-_cvLIFb_x9" },
+    journalData: {
+      type: "hasMany",
+      children: { model: "journalData", belongsToField: "user" },
+      storageKey: "5HFzB7njRpDM",
+    },
     lastName: { type: "string", storageKey: "pdbrvA0iL1kg" },
     lastSignedIn: {
       type: "dateTime",
