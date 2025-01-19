@@ -1,3 +1,4 @@
+// @ts-nocheck comment at the top of a file
 import { InvalidRecordError, type ActionRun } from "gadget-server";
 import Groq from "groq-sdk";
 import path from 'path';

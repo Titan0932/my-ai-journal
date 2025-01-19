@@ -4,8 +4,7 @@ export const run: ActionRun = async ({ params, record, session, logger, api, con
   applyParams(params, record);
 
  
-  if (session?.get("user") && !record.user) {
- 
+  if (session?.get("user")) {
     record.user = { _link: session.get("user") };
   }
 
