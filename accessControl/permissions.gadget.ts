@@ -47,6 +47,11 @@ export const permissions: GadgetPermissions = {
           },
         },
       },
+      actions: {
+        emotionAnalyzer: true,
+        getSummary: true,
+        speechToText: true,
+      },
     },
     unauthenticated: {
       storageKey: "unauthenticated",
