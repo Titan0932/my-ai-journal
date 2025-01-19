@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
 import Markdown from 'react-markdown';
 
-const JournalModal = ({ show, onHide, entry, isSummarizing }) => {
+const JournalModal = ({ show, onHide, entry, isSummarizing, reEvaluation }) => {
   const EmotionLabel = ({ label, score }) => {
     const getEmotionColor = (emotion) => {
       const colors = {
@@ -41,6 +41,7 @@ const JournalModal = ({ show, onHide, entry, isSummarizing }) => {
               <Modal.Title className="text-xl font-semibold text-gray-900">
                 {entry.title}
               </Modal.Title>
+              
               <span className="text-sm text-gray-500">
                 {new Date(entry.date).toLocaleDateString()}
               </span>
@@ -65,10 +66,18 @@ const JournalModal = ({ show, onHide, entry, isSummarizing }) => {
             <div className="space-y-6">
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="text-lg font-semibold text-gray-900 mb-3">
-                  Summary
+                  {
+                    entry.image? 
+                      "Image" : "Summary"
+                  }
                 </h4>
-                <div className="prose prose-sm max-w-none text-gray-700">
-                  <Markdown>{entry.summary}</Markdown>
+                <div className="prose prose-sm max-w-none text-gray-700 d-flex justify-center">
+                  {
+                    entry.image? 
+                      <img src={entry.image} width={"50%"} height={"auto"}/>
+                    : 
+                      <Markdown>{entry.summary}</Markdown>
+                  }
                 </div>
               </div>
 

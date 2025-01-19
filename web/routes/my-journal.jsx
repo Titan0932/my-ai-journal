@@ -13,25 +13,43 @@ import Markdown from 'react-markdown';
 import EmotionLabels from '../components/EmotionLabels';
 import JournalCard from '../components/JournalCard';
 import JournalModal from '../components/JournalModal';
+import EmotionFilter from '../components/EmotionFilter';
 
 const JournalList = ({ entries, onEdit, onDelete }) => {
+  const [filteredEntries, setFilteredEntries] = useState(entries);
+
+  useEffect(() => {
+    setFilteredEntries(entries);
+  }, [entries]);
+  
+  const handleFilterSort = (newFilteredEntries) => {
+    setFilteredEntries(newFilteredEntries);
+  };
+  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {entries.length === 0 ? (
-        <div className="col-span-full text-center text-gray-500">
-          No journal entries yet
-        </div>
-      ) : (
-        entries.map(entry => (
-          <div key={entry.id} className="flex">
-            <JournalEntry
-              entry={entry}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
+    <div>
+      <EmotionFilter 
+        entries={entries}
+        onFilterSort={handleFilterSort}
+      />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredEntries.length === 0 ? (
+          <div className="col-span-full text-center text-gray-500 py-8">
+            No journal entries match your filter
           </div>
-        ))
-      )}
+        ) : (
+          filteredEntries.map(entry => (
+            <div key={entry.id} className="flex">
+              <JournalEntry
+                entry={entry}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 };
@@ -83,6 +101,7 @@ const JournalEntry = ({ entry, onEdit, onDelete }) => {
         onHide={() => setShowModal(false)}
         entry={entry}
         isSummarizing={isSummarizing}
+        reEvaluation={() => onEdit(entry, true, true)}
       />
     </>
   );
@@ -131,23 +150,39 @@ const MyJournal = () => {
       }
     )
   },[createData, deleteData, updateData])
+
   
-  const sendEditAction = async (entry) => {
+  const sendEditAction = async (entry, reEvaluation) => {
     let editableObj = {id: entry.id}  // to identify the record
       for(let key of Object.keys(entry)){
         if(MUTABLE_FIELDS.includes(key)){
           editableObj[key] = entry[key]
         }
       }
+      let existing = entries.find(val => val.id == entry.id)
+      if(existing.content == entry.content && !reEvaluation){
+        await update({
+          ...editableObj
+        })
 
+        if (!updateError)
+          setEntries(entries.map(e => 
+            e.id === entry.id ? { ...entry, id: e.id, m } : e
+          ));
 
-      await update({
-        ...editableObj
-      })
-      if (!updateError)
-        setEntries(entries.map(e => 
-          e.id === entry.id ? { ...entry, id: e.id } : e
-        ));
+      }else{
+        let emotionResult = await emotionAnalyzer({content: entry.content})
+        let newEntryWithEmotion = {...editableObj, moodscores: emotionResult.data}
+        await update({
+          ...newEntryWithEmotion,
+        })
+        if (!updateError)
+          setEntries(entries.map(e => 
+            e.id === entry.id ? { ...entry, id: e.id, moodscores: emotionResult.data} : e
+          ));
+
+      }
+
 
       setEditingEntry(null);
   }
@@ -182,9 +217,9 @@ const MyJournal = () => {
   // console.log("entries: ", entries)
   // console.log("editingEntry: ", editingEntry)
 
-  const handleEdit = async (entry, submit = false) => {
+  const handleEdit = async (entry, submit = false, reEvaluation = false) => {
     submit ? 
-      await sendEditAction(entry)
+      await sendEditAction(entry, reEvaluation)
     :
       setEditingEntry({...entry, date: new Date(entry.date).toISOString().split('T')[0]});
 
@@ -212,6 +247,7 @@ const MyJournal = () => {
           <JournalForm 
             onSubmit={handleSubmit}
             initialEntry={editingEntry}
+            setEditingEntry={setEditingEntry}
           />
           <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold text-center mb-8">My Journal</h1>

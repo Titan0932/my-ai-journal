@@ -50,6 +50,7 @@ export const permissions: GadgetPermissions = {
       actions: {
         emotionAnalyzer: true,
         getSummary: true,
+        imageAnalyzer: true,
         speechToText: true,
       },
     },

@@ -2,8 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useUser, useGlobalAction } from "@gadgetinc/react";
 import { api } from '../api';
+import ImageEmotionAnalysis from './ImageEmotionAnalysis';
 
-export const JournalForm = ({ onSubmit, initialEntry = null }) => {
+export const JournalForm = ({ onSubmit, initialEntry = null, setEditingEntry }) => {
   const user = useUser(api);
   const [isRecording, setIsRecording] = useState(false);
   const [{ data:speechData, error: speechError, fetching:fetchingSpeech }, speechToText] = useGlobalAction(api.speechToText);
@@ -33,6 +34,7 @@ export const JournalForm = ({ onSubmit, initialEntry = null }) => {
     e.preventDefault();
     onSubmit(entry);
     setEntry(defaultEntry);
+    setEditingEntry(null)
   };
 
   const blobToBase64 = (blob) => {
@@ -94,6 +96,17 @@ export const JournalForm = ({ onSubmit, initialEntry = null }) => {
     }
   };
 
+  const handleImageAnalysis = (analysis, base64Image, fullBase64Image) => {
+    // Assuming the analysis returns a text description
+    setEntry(prev => ({
+      ...prev,
+      content: '\n\nImage Analysis:\n' + analysis,
+      // You might also want to store the image and analysis separately
+      image: fullBase64Image
+    }));
+  };
+
+
   return (
     <form onSubmit={handleSubmit} className="mb-4">
       <div className="mb-3">
@@ -137,13 +150,14 @@ export const JournalForm = ({ onSubmit, initialEntry = null }) => {
           }
         </label>
         <textarea
-          className="form-control"
+          className="form-control mb-3"
           id="content"
-          rows="5"
+          rows="7"
           value={entry.content}
           onChange={(e) => setEntry({ ...entry, content: e.target.value })}
           required
         />
+        <ImageEmotionAnalysis onImageAnalysis={handleImageAnalysis} />
         <div className="mb-3">
           <label htmlFor="date" className="form-label">Date</label>
           <input
@@ -163,7 +177,7 @@ export const JournalForm = ({ onSubmit, initialEntry = null }) => {
         {initialEntry ? 'Update Entry' : 'Add Entry'}
       </button>
       {initialEntry && 
-        <button className="btn btn-error" onClick={() => handleSubmit(null, true)}>
+        <button className="btn btn-error" onClick={(e) => handleSubmit(null, true)}>
           Cancel
         </button>
       }

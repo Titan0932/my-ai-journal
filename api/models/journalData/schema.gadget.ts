@@ -18,6 +18,7 @@ export const schema: GadgetModel = {
       validations: { required: true, unique: true },
       storageKey: "omLsYad4zAUC",
     },
+    image: { type: "string", storageKey: "8KSnjOqbioEa" },
     keywords: { type: "json", storageKey: "GDpiY7E7m4cz" },
     moodscores: {
       type: "json",
