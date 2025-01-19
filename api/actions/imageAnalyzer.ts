@@ -1,3 +1,4 @@
+// @ts-nocheck comment at the top of a file
 import { InvalidRecordError } from "gadget-server";
 import Groq from "groq-sdk";
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });

@@ -167,7 +167,7 @@ const MyJournal = () => {
 
         if (!updateError)
           setEntries(entries.map(e => 
-            e.id === entry.id ? { ...entry, id: e.id, m } : e
+            e.id === entry.id ? { ...entry, id: e.id } : e
           ));
 
       }else{

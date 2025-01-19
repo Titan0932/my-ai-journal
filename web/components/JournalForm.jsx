@@ -2,17 +2,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useUser, useGlobalAction } from "@gadgetinc/react";
 import { api } from '../api';
+import { Mic, MicOff, Globe, Upload } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import ImageEmotionAnalysis from './ImageEmotionAnalysis';
 
 export const JournalForm = ({ onSubmit, initialEntry = null, setEditingEntry }) => {
   const user = useUser(api);
   const [isRecording, setIsRecording] = useState(false);
-  const [{ data:speechData, error: speechError, fetching:fetchingSpeech }, speechToText] = useGlobalAction(api.speechToText);
+  const [{ data: speechData, error: speechError, fetching: fetchingSpeech }, speechToText] = useGlobalAction(api.speechToText);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const [loading, setLoading] = useState(false);
-  const [translateMode, setTranslateMode] = useState(false)
-
+  const [translateMode, setTranslateMode] = useState(false);
 
   const defaultEntry = {
     title: '',
@@ -21,7 +26,8 @@ export const JournalForm = ({ onSubmit, initialEntry = null, setEditingEntry }) 
     summary: "",
     keywords: {},
     moodscores: {},
-  }
+  };
+  
   const [entry, setEntry] = useState(defaultEntry);
 
   useEffect(() => {
@@ -108,79 +114,103 @@ export const JournalForm = ({ onSubmit, initialEntry = null, setEditingEntry }) 
 
 
   return (
-    <form onSubmit={handleSubmit} className="mb-4">
-      <div className="mb-3">
-        <label htmlFor="title" className="form-label">Title</label>
-        <input
-          type="text"
-          className="form-control"
-          id="title"
-          value={entry.title}
-          onChange={(e) => setEntry({ ...entry, title: e.target.value })}
-          required
-        />
-      </div>
-      
-      <div className="mb-3">
-        <label htmlFor="content" className="form-label d-flex justify-content-between align-items-center">
-          Content
-          <button
-            type="button"
-            className={`btn btn-sm ${isRecording ? 'btn-danger' : 'btn-outline-secondary'}`}
-            onClick={isRecording ? stopRecording : startRecording}
-            disabled={loading || fetchingSpeech}
-          >
-            {isRecording ? (
-              <>
-                <i className="bi bi-mic-fill me-1"></i>
-                Stop Recording
-              </>
-            ) : (
-              <>
-                <i className="bi bi-mic me-1"></i>
-                Start Recording
-              </>
+    <Card className="w-full max-w-3xl mx-auto" style={{background: "#f5cb42", color:"#525151"}}>
+      <CardHeader>
+        <CardTitle className="text-2xl font-semibold">
+          {initialEntry ? 'Edit Journal Entry' : 'New Journal Entry'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              value={entry.title}
+              onChange={(e) => setEntry({ ...entry, title: e.target.value })}
+              className="w-full"
+              placeholder="Enter your journal title..."
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="content">Content</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={translateMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTranslateMode(!translateMode)}
+                  className="flex items-center gap-2 text-white"
+                >
+                  <Globe className="h-4 w-4" />
+                  {translateMode ? "Translation On" : "Translation Off"}
+                </Button>
+                <Button
+                  type="button"
+                  variant={isRecording ? "destructive" : "outline"}
+                  size="sm"
+                  onClick={isRecording ? stopRecording : startRecording}
+                  disabled={loading || fetchingSpeech}
+                  className="flex items-center gap-2  text-white"
+                >
+                  {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  {isRecording ? "Stop Recording" : "Start Recording"}
+                </Button>
+              </div>
+            </div>
+            <Textarea
+              id="content"
+              value={entry.content}
+              onChange={(e) => setEntry({ ...entry, content: e.target.value })}
+              className="min-h-[200px]"
+              placeholder="Write your thoughts here..."
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="date">Date</Label>
+            <Input
+              type="date"
+              id="date"
+              value={entry.date}
+              onChange={(e) => setEntry({ ...entry, date: e.target.value })}
+              className="w-full"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Image Analysis</Label>
+            <ImageEmotionAnalysis onImageAnalysis={handleImageAnalysis} />
+          </div>
+
+          {loading && (
+            <div className="text-sm text-muted-foreground animate-pulse">
+              Transcribing audio...
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-4">
+            <Button type="submit" className="w-full">
+              {initialEntry ? 'Update Entry' : 'Add Entry'}
+            </Button>
+            {initialEntry && (
+              <Button
+                // type="button"
+                variant="destructive"
+                className="w-full"
+                onClick={() => handleSubmit(null, true)}
+              >
+                Cancel
+              </Button>
             )}
-          </button>
-          {
-            <span
-              className={`btn btn-sm ${translateMode ? 'btn-danger' : 'btn-outline-secondary'}`}
-              onClick={() => {setTranslateMode(!translateMode)}}
-            >{translateMode? "Translation On" : "Translation Off"}</span>
-          }
-        </label>
-        <textarea
-          className="form-control mb-3"
-          id="content"
-          rows="7"
-          value={entry.content}
-          onChange={(e) => setEntry({ ...entry, content: e.target.value })}
-          required
-        />
-        <ImageEmotionAnalysis onImageAnalysis={handleImageAnalysis} />
-        <div className="mb-3">
-          <label htmlFor="date" className="form-label">Date</label>
-          <input
-            type="date"
-            className="form-control"
-            id="date"
-            value={entry.date}
-            onChange={(e) => setEntry({ ...entry, date: e.target.value })}
-            required
-          />
-        </div>
-      </div>
-
-      {loading && <p className="text-muted">Transcribing audio...</p>}
-
-      <button type="submit" className="btn btn-primary">
-        {initialEntry ? 'Update Entry' : 'Add Entry'}
-      </button>
-      {initialEntry && 
-        <button className="btn btn-error" onClick={(e) => handleSubmit(null, true)}>
-          Cancel
-        </button>
-      }
-    </form>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
